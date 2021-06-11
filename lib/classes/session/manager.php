@@ -323,6 +323,28 @@ class manager {
         ini_set('session.gc_probability', 1);
         ini_set('session.gc_divisor', 1000);
         ini_set('session.gc_maxlifetime', 60*60*24*4);
+        // workaround for samesite cookie flag for old PHP versions
+        $currentCookieParams = session_get_cookie_params();
+        if (PHP_VERSION_ID >= 70300) {
+            session_set_cookie_params(
+                [
+                    'lifetime' => $currentCookieParams["lifetime"],
+                    'path' => '/',
+                    'domain' => $currentCookieParams["domain"],
+                    'secure' => "1",
+                    'httponly' => "1",
+                    'samesite' => 'None',
+                ]
+            );
+        } else {
+            session_set_cookie_params(
+                $currentCookieParams["lifetime"],
+                '/; samesite=None',
+                $currentCookieParams["domain"],
+                "1",
+                "1"
+            );
+        }
     }
 
     /**
